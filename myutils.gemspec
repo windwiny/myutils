@@ -8,8 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = Myutils::VERSION
   spec.authors       = ["windwiny"]
   spec.email         = ["windwiny.ubt@gmail.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
+  spec.summary       = %q{my utils}
+  spec.description   = %q{my utils}
   spec.homepage      = ""
   spec.license       = "MIT"
 

@@ -1,0 +1,35 @@
+#!/usr/bin/env ruby -w
+
+require 'openssl'
+
+fa = []
+
+ARGV.each do |fn2|
+  if fn2.include?('?') || fn2.include?('*')
+    fa += Dir.glob(fn2)
+  else
+    fa << fn2
+  end
+end
+
+
+fa.each do |fn2|
+  fs = []
+  if File.directory? fn2
+    fs = Dir["#{fn2}/**/*"]
+  elsif File.file? fn2
+    fs = [fn2]
+  end
+
+  fs.each do |fn|
+    next if !File.file? fn
+    m = OpenSSL::Digest::MD5.new
+    File.open(fn, "rb") do |file|
+      while da = file.read(1024**2*20)
+        m.update da
+      end
+    end
+    puts "#{m.hexdigest}  #{fn}"
+  end
+end
+
