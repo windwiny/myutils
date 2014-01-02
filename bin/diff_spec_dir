@@ -1,0 +1,13 @@
+#!/usr/bin/env ruby
+
+specs= Gem::Specification.to_a.map {|x|x.name+'-' +x.version.to_s};
+Dir.chdir "#{Gem.path[1]}/gems" do $ds||=[];$ds=Dir['*'] end;
+
+print "Specification files: ", specs.size
+puts
+print "Directory Count: ", $ds.size
+puts
+print "Directory more Specfile: ", $ds-specs
+puts
+print "Specfile more Directory: ", specs-$ds
+puts

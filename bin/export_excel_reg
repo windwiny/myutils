@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby -w
+
+i=0
+x = []
+y = []
+DATA.each_line do |line|
+  line.strip!
+  next if line.empty?
+  i+=1
+  
+  x<<"regedit /e #{format '%03d', i}.reg #{line}"
+  y<<"regedit /S #{format '%03d', i}.reg"
+end
+
+puts x
+p '---'
+puts y
+
+__END__
+
+HKEY_CLASSES_ROOT\Excel.Addin
+HKEY_CLASSES_ROOT\Excel.AddInMacroEnabled
+HKEY_CLASSES_ROOT\Excel.Application
+HKEY_CLASSES_ROOT\Excel.Application.12
+HKEY_CLASSES_ROOT\Excel.Backup
+HKEY_CLASSES_ROOT\Excel.Chart
+HKEY_CLASSES_ROOT\Excel.Chart.5
+HKEY_CLASSES_ROOT\Excel.Chart.8
+HKEY_CLASSES_ROOT\Excel.CSV
+HKEY_CLASSES_ROOT\Excel.Macrosheet
+HKEY_CLASSES_ROOT\Excel.Sheet
+HKEY_CLASSES_ROOT\Excel.Sheet.12
+HKEY_CLASSES_ROOT\Excel.Sheet.5
+HKEY_CLASSES_ROOT\Excel.Sheet.8
+HKEY_CLASSES_ROOT\Excel.SheetBinaryMacroEnabled
+HKEY_CLASSES_ROOT\Excel.SheetBinaryMacroEnabled.12
+HKEY_CLASSES_ROOT\Excel.SheetMacroEnabled
+HKEY_CLASSES_ROOT\Excel.SheetMacroEnabled.12
+HKEY_CLASSES_ROOT\Excel.SLK
+HKEY_CLASSES_ROOT\Excel.Template
+HKEY_CLASSES_ROOT\Excel.Template.8
+HKEY_CLASSES_ROOT\Excel.TemplateMacroEnabled
+HKEY_CLASSES_ROOT\Excel.WebQuery
+HKEY_CLASSES_ROOT\Excel.Workspace
+HKEY_CLASSES_ROOT\Excel.XLL
+HKEY_CLASSES_ROOT\ExcelChart
+HKEY_CLASSES_ROOT\Excelhtmlfile
+HKEY_CLASSES_ROOT\Excelhtmltemplate
+HKEY_CLASSES_ROOT\ExcelMacrosheet
+HKEY_CLASSES_ROOT\excelmhtmlfile
+HKEY_CLASSES_ROOT\ExcelWorksheet
+HKEY_CLASSES_ROOT\Excelxmlss
+HKEY_CLASSES_ROOT\.xla
+HKEY_CLASSES_ROOT\.xlam
+HKEY_CLASSES_ROOT\.xlk
+HKEY_CLASSES_ROOT\.xll
+HKEY_CLASSES_ROOT\.xlm
+HKEY_CLASSES_ROOT\.xls
+HKEY_CLASSES_ROOT\.xlsb
+HKEY_CLASSES_ROOT\.xlshtml
+HKEY_CLASSES_ROOT\.xlsm
+HKEY_CLASSES_ROOT\.xlsmhtml
+HKEY_CLASSES_ROOT\.xlsx
+HKEY_CLASSES_ROOT\.xlt
+HKEY_CLASSES_ROOT\.xlthtml
+HKEY_CLASSES_ROOT\.xltm
+HKEY_CLASSES_ROOT\.xltx
+HKEY_CLASSES_ROOT\.xlw
+HKEY_CLASSES_ROOT\.xlxml

@@ -1,0 +1,143 @@
+#!/usr/bin/env ruby -w
+
+def create_iplist
+  f1 = '/Users/windwiny/Downloads/speed_up/data/ip-up'
+  f2 = '/Users/windwiny/Documents/myip1.txt'
+
+  ## find all ip/mask
+  ips = []
+  File.foreach(f1) do |line|
+    /(?<net>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2})/ =~ line
+    ips << net if net
+  end
+  File.foreach(f2) do |line|
+    /(?<net>\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\/\d{1,2})/ =~ line
+    ips << net if net
+  end
+  ips.uniq!
+  puts ips.size
+  ips
+end
+
+def cr_hs(ips)
+  fo1 = "/Users/windwiny/Documents/ipup-hs.sh"
+  fo2 = "/Users/windwiny/Documents/ipdown-hs.sh"
+  puts fo1
+  puts fo2
+
+  tt = Time.now
+
+  File.open(fo1, 'w') do |f|
+    f.puts "# create by myip.rb at #{tt}"
+    f.puts 'export PATH="/bin:/sbin:/usr/sbin:/usr/bin"'
+    f.puts "dscacheutil -flushcache"
+    f.puts "date"
+    f.puts
+    ips.each do |net|
+      f.puts "route add -net #{net} 10.188.182.1"
+    end
+  end
+
+  File.open(fo2, 'w') do |f|
+    f.puts "# create by myip.rb at #{tt}"
+    f.puts "date"
+    f.puts
+    ips.each do |net|
+      f.puts "route delete -net #{net} 10.188.182.1"
+    end
+    f.puts "dscacheutil -flushcache"
+  end
+  
+  File.chmod(0755, fo1)
+  File.chmod(0755, fo2)
+end
+
+def cr_xm(ips)
+  fo1 = "/Users/windwiny/Documents/ipup-xm.sh"
+  fo2 = "/Users/windwiny/Documents/ipdown-xm.sh"
+  puts fo1
+  puts fo2
+
+  tt = Time.now
+
+  File.open(fo1, 'w') do |f|
+    f.puts "# create by myip.rb at #{tt}"
+    f.puts 'export PATH="/bin:/sbin:/usr/sbin:/usr/bin"'
+    f.puts "dscacheutil -flushcache"
+    f.puts "date"
+    f.puts
+    ips.each do |net|
+      f.puts "route add -net #{net} -interface ppp0"
+    end
+  end
+
+  File.open(fo2, 'w') do |f|
+    f.puts "# create by myip.rb at #{tt}"
+    f.puts "date"
+    f.puts
+    ips.each do |net|
+      f.puts "route delete -net #{net} -interface ppp0"
+    end
+    f.puts "dscacheutil -flushcache"
+  end
+  
+  File.chmod(0755, fo1)
+  File.chmod(0755, fo2)
+end
+
+ips = create_iplist
+cr_hs ips
+cr_xm ips
+#cr_home
+
+__END__
+
+
+
+def create_sh(interface, ips)
+  fo1 = "/Users/windwiny/Documents/ipup-#{interface}.sh"
+  puts fo1
+  fo2 = "/Users/windwiny/Documents/ipdown-#{interface}.sh"
+  puts fo2
+
+  ## output
+  tt = Time.now
+
+  # ipup-
+  File.open(fo1, 'w') do |f|
+    f.puts "# create by myip.rb at #{tt}"
+    f.puts 'export PATH="/bin:/sbin:/usr/sbin:/usr/bin"'
+    f.puts "dscacheutil -flushcache"
+    f.puts "date"
+    f.puts
+    ips.each do |net|
+      f.puts "route add -net #{net} -interface #{interface}"
+    end
+  end
+  File.chmod(0755, fo1)
+
+  # ipdown-
+  File.open(fo2, 'w') do |f|
+    f.puts "# create by myip.rb at #{tt}"
+    ips.each do |net|
+      f.puts "route delete -net #{net} -interface #{interface}"
+    end
+  end
+  File.chmod(0755, fo2)
+end
+
+
+%w{en0 en2 ppp0}.each do |interface|
+  create_sh(interface, ips)
+end
+
+x = %x{ifconfig -a}
+interface = if x =~ /^ppp0/
+  'ppp0'
+elsif x =~ /^en0/
+  'en0'
+else
+  'en2'
+end
+
+puts "current is #{interface}"

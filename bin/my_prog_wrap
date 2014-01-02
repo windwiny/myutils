@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+# ruby program wrap. 
+
+# mv /usr/bin/aaa /usr/bin/aaa_ori
+# cp ./pg_wrap.rb /usr/bin/aaa
+
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+BLUE="\033[0;33m"
+WHITE="\033[00m"
+
+PG=__FILE__
+PG_ORI=PG+'_ori'
+LOG_F='/tmp/log'
+
+ARGV2 = ARGV.map{|x| x=~/[ ']/ ? "\"#{x.gsub("\"","\\\"")}\"" : x.gsub("\"","\\\"")}.join(' ')
+
+str = "#{Time.now} #{GREEN}#{PG} #{ARGV2}#{WHITE}\n"
+print str
+File.open(LOG_F,'ab'){ |f| f.write str }
+
+system("#{PG_ORI} #{ARGV2}")
+
+str = "#{Time.now} #{RED}#{PG_ORI} return => [ #{$?.exitstatus} ]#{WHITE}\n\n"
+print str
+File.open(LOG_F,'ab'){ |f| f.write str }
+
+exit $?.exitstatus

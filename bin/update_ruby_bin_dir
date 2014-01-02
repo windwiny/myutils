@@ -1,0 +1,46 @@
+#!/usr/bin/env ruby -w
+
+# d1= '/usr/local/homebrew/Cellar/ruby/1/bin'
+# d2= '/usr/local/homebrew/Cellar/ruby/2/bin'
+
+if ARGV.size != 2
+  abort "#{__FILE__}  dir1/bin  dir2/bin"
+end
+d1,d2 = ARGV.dup
+
+unless d1.start_with?('/') && d2.start_with?('/')
+  abort "dir must begin with '/'"
+end
+unless d1.end_with?('/bin') && d2.end_with?('/bin')
+  abort "dir must end with '/bin'"
+end
+puts "dir1: #{d1}"
+puts "dir2: #{d2}"
+#cc=gets
+
+
+Dir.chdir d1 do |p|
+  $fs1 = Dir.glob '*'
+end
+Dir.chdir d2 do |p|
+  $fs2 = Dir.glob '*'
+end
+
+p $fs1
+p $fs2
+
+$fs1.each do |fn|
+  next if $fs2.include? fn
+  
+  f1=d1+'/'+fn
+  f2=d2+'/'+fn
+  
+  da = File.binread(f1)
+  da.sub!(d1, d2)
+  
+  File.binwrite(f2, da)
+  mode = File.stat(f1).mode
+  File.chmod(mode,  f2)
+  puts "#{mode} #{f1} --> #{f2}"
+end
+
