@@ -1,0 +1,27 @@
+#!/usr/bin/env ruby
+# show brew install program info.
+# independence missing ..
+
+pgs = %x{brew list}.split
+deps = []
+depss = []
+pgs.each do |pg|
+  d = %x{brew deps --1 #{pg}}.split
+  deps << d
+  depss << [pg, d]
+end
+
+pgs.sort!
+deps.flatten!.sort!.uniq!
+depss.sort!
+
+indep = pgs - deps
+mis = deps - pgs
+p "SUMMARY: pgs: #{pgs.size}  independence: #{indep.size}  miss: #{mis.size}"
+p '---- independence program ----'
+p indep
+p '---- missing program ----'
+p mis
+p '------- all program and deps -------'
+depss.each {|x| p x}
+
