@@ -1,0 +1,35 @@
+require "securerandom"
+require "tmpdir"
+
+abort "#{__FILE__} Dir1 [Dir2...] " if ARGV.empty?
+
+ARGV.each do |fn|
+  next if !File.directory?(fn)
+  puts "======================================="
+
+  logf = "\"#{Dir.tmpdir}/#{File.basename File.absolute_path fn}_#{SecureRandom.uuid}.log\"".gsub('/', "\\")
+  logfbn = File.basename logf[1...-1]
+  puts "Processing #{fn} --> #{logf}"
+
+  puts "======================="
+  res = system "getdirtimes #{fn} > #{logf}"
+  break if !res
+
+  puts "======================="
+  puts %x{dir #{logf}}.each_line.find_all {|l| l =~ %r{\d+ #{Regexp.escape logfbn}} }
+
+  puts "======================="
+  res = system "cipher /E /H /S:#{fn}"
+  if !res
+    puts "\n\n cipher->false Have ReadOnly files."
+  else
+    puts "ok."
+  end
+
+  puts "======================="
+  puts "run restoreoldtimes"
+  res = system "restoreoldtimes #{fn} #{logf}"
+  break if !res
+
+  %x{del #{logf}}
+end
