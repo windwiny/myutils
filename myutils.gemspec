@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["windwiny"]
   spec.email         = ["windwiny.ubt@gmail.com"]
   spec.summary       = %q{my utils}
-  spec.description   = %q{my utils}
-  spec.homepage      = ""
+  spec.description   = %q{my utils collect}
+  spec.homepage      = "https://github.com/windwiny/myutils"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
