@@ -1,7 +1,23 @@
 #!/usr/bin/env ruby -w
+# encoding: GBK
 
 require "securerandom"
 require "tmpdir"
+require "ffi"
+
+module W32
+  extend FFI::Library
+  ffi_convention :std_call
+  ffi_lib 'user32'
+  attach_function :MessageBox, :MessageBoxA, [:pointer, :string, :string, :uint], :int
+  module MSG
+    MB_YESNO = 0x4
+    MB_ICONQUESTION = 0x20
+    MB_DEFBUTTON2 = 0x100
+    IDYES = 6
+    IDNO = 7
+  end
+end
 
 abort "#{__FILE__} Dir1 [Dir2...] " if ARGV.empty?
 
@@ -20,12 +36,22 @@ ARGV.each do |fn|
   puts "======================="
   puts %x{dir #{logf}}.each_line.find_all {|l| l =~ %r{\d+ #{Regexp.escape logfbn}} }
 
-  puts "======================="
-  res = system "cipher /E /H /S:#{fn}"
-  if !res
-    puts "\n\n cipher->false Have ReadOnly files."
-  else
-    puts "ok."
+  while true
+    ans = W32.MessageBox(nil, "Using GUI cipher \"#{File.absolute_path(fn)}\" ?",
+                          "GUI or CLI cipher directory",
+                          W32::MSG::MB_YESNO|W32::MSG::MB_ICONQUESTION|W32::MSG::MB_DEFBUTTON2)
+    if ans == W32::MSG::IDYES
+      break
+    elsif ans == W32::MSG::IDNO
+      puts "======================="
+      res = system "cipher /E /H /S:#{fn}"
+      if !res
+        puts "\n\n cipher->false Have ReadOnly files."
+      else
+        puts "ok."
+      end
+      break
+    end
   end
 
   puts "======================="
@@ -34,4 +60,5 @@ ARGV.each do |fn|
   break if !res
 
   %x{del #{logf}}
+  puts "finished."
 end
