@@ -9,7 +9,7 @@ module W32
   extend FFI::Library
   ffi_convention :std_call
   ffi_lib 'user32'
-  attach_function :MessageBox, :MessageBoxA, [:pointer, :string, :string, :uint], :int
+  attach_function :MessageBox, :MessageBoxA, [:ulong, :string, :string, :uint], :int
   module MSG
     MB_YESNO = 0x4
     MB_ICONQUESTION = 0x20
@@ -37,7 +37,7 @@ ARGV.each do |fn|
   puts %x{dir #{logf}}.each_line.find_all {|l| l =~ %r{\d+ #{Regexp.escape logfbn}} }
 
   while true
-    ans = W32.MessageBox(nil, "Using GUI cipher \"#{File.absolute_path(fn)}\" ?",
+    ans = W32.MessageBox(0, "Using GUI cipher \"#{File.absolute_path(fn)}\" ?",
                           "GUI or CLI cipher directory",
                           W32::MSG::MB_YESNO|W32::MSG::MB_ICONQUESTION|W32::MSG::MB_DEFBUTTON2)
     if ans == W32::MSG::IDYES
