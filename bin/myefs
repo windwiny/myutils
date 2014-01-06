@@ -30,7 +30,7 @@ ARGV.each do |fn|
   puts "Processing #{fn} --> #{logf}"
 
   puts "======================="
-  res = system "getdirtimes #{fn} > #{logf}"
+  res = system "getdirtimes \"#{fn}\" > #{logf}"
   break if !res
 
   puts "======================="
@@ -44,7 +44,7 @@ ARGV.each do |fn|
       break
     elsif ans == W32::MSG::IDNO
       puts "======================="
-      res = system "cipher /E /H /S:#{fn}"
+      res = system "cipher /E /H /S:\"#{fn}\" "
       if !res
         puts "\n\n cipher->false Have ReadOnly files."
       else
@@ -56,7 +56,7 @@ ARGV.each do |fn|
 
   puts "======================="
   puts "run restoreoldtimes"
-  res = system "restoreoldtimes #{fn} #{logf}"
+  res = system "restoreoldtimes \"#{fn}\" #{logf}"
   break if !res
 
   %x{del #{logf}}
