@@ -1,0 +1,58 @@
+#!/usr/bin/env ruby
+# encoding: GBK
+
+def processdir dn
+  begin
+    Dir.chdir(dn) do
+      fs=Dir.glob('*', File::FNM_DOTMATCH)
+      fs.delete '.'
+      fs.delete '..'
+      fs.each do |fxx|
+        if File.directory? fxx
+          $ds += 1
+          fx2 = fxx.downcase
+          next if fx2.start_with?('.spotlight') || fx2.start_with?('.trashes') || fx2.start_with?('$recycle')
+          processdir fxx
+          # next
+        else
+          $fs += 1
+        end
+        if fxx == '.DS_Store'
+          print %Q{del "#{Dir.pwd}/#{fxx}"\t}
+          p File.delete(fxx) rescue nil
+          $idel += 1
+          next
+        end
+        if fxx.start_with?('._')
+          if fs.include?(fxx[2..-1])
+            print %Q{del "#{Dir.pwd}/#{fxx}"\t}
+            p File.delete(fxx) rescue nil
+            $idel += 1
+          else
+            $nodelf ||= File.open("z:/del#{Time.now.strftime '%Y%m%d%H%M%S'}.bat", 'a')
+            print %Q{    no del "#{Dir.pwd}/#{fxx}"\n}
+            $nodelf.print %Q{del /f "#{Dir.pwd}/#{fxx}"\n}
+            $inodel += 1
+          end
+        end
+      end    
+    end
+  rescue Exception => e
+    p e
+  end
+end
+ARGV.each do |dn|
+  $idel = 0
+  $inodel = 0
+  $ds = 0
+  $fs = 0
+  puts %Q{BEGIN dir:#{dn}}
+  if File.directory? dn
+    processdir dn
+  end
+  puts %Q{END   dir:#{dn},   ds:#{$ds},  fs:#{$fs},  del:#{$idel},  no del:#{$inodel}}
+  if $nodelf
+    $nodelf.close
+    STDERR.puts "\n\nno deleted file SEE   #{$nodelf.path}"
+  end
+end
