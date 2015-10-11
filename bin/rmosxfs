@@ -1,9 +1,24 @@
 #!/usr/bin/env ruby
 # encoding: GBK
 
-def processdir dn
+def processdir(dn, level)
+  return if $options[:maxdepth] && level > $options[:maxdepth]
+  $options[:exclude].each do |excl|
+    if dn == excl
+      STDERR.puts %Q{ --exclude "#{dn}",   == self}
+      return
+    elsif excl[0]=='/'
+      rs = excl[1..-1].chomp('/')
+      if !rs.empty? && Regexp.new(rs) =~ dn
+        STDERR.puts %Q{ --exclude "#{dn}",    ~= /#{rs}/}
+        return
+      end
+    end
+  end if $options[:exclude]
+
   begin
     Dir.chdir(dn) do
+      puts "#{Dir.pwd}, #{dn}" if $options[:verbose2]
       fs=Dir.glob('*', File::FNM_DOTMATCH)
       fs.delete '.'
       fs.delete '..'
@@ -12,21 +27,37 @@ def processdir dn
           $ds += 1
           fx2 = fxx.downcase
           next if fx2.start_with?('.spotlight') || fx2.start_with?('.trashes') || fx2.start_with?('$recycle')
-          processdir fxx
+          processdir(fxx, level+1)
           # next
         else
           $fs += 1
         end
         if fxx == '.DS_Store'
-          print %Q{del "#{Dir.pwd}/#{fxx}"\t}
-          p File.delete(fxx) rescue nil
-          $idel += 1
-          next
+            res = if !$options[:dryrun]
+              File.delete(fxx) rescue nil
+            end
+            if $options[:verbose]
+              if $options[:dryrun]
+                puts %Q{del "#{Dir.pwd}/#{fxx}"}
+              else
+                puts %Q{del "#{Dir.pwd}/#{fxx}"\t#{res}}
+              end
+            end
+            $idel += 1
+            next
         end
         if fxx.start_with?('._')
           if fs.include?(fxx[2..-1])
-            print %Q{del "#{Dir.pwd}/#{fxx}"\t}
-            p File.delete(fxx) rescue nil
+            res = if !$options[:dryrun]
+              File.delete(fxx) rescue nil
+            end
+            if $options[:verbose]
+              if $options[:dryrun]
+                puts %Q{del "#{Dir.pwd}/#{fxx}"}
+              else
+                puts %Q{del "#{Dir.pwd}/#{fxx}"\t#{res}}
+              end
+            end
             $idel += 1
           else
             $nodelf ||= File.open("z:/del#{Time.now.strftime '%Y%m%d%H%M%S'}.bat", 'a')
@@ -41,18 +72,49 @@ def processdir dn
     p e
   end
 end
+
+
+require 'optparse'
+
+options = {}
+OptionParser.new do |opts|
+  opts.banner = "Usage: rmosxfs.rb [options] dir1 dir2 .."
+
+  opts.on("-v", "--[no-]verbose", "Run verbosely, show delete every file name") do |v|
+    options[:verbose] = v
+  end
+  opts.on("--verbose2", "Run verbosely, show every directory name") do |v|
+    options[:verbose2] = v
+  end
+  opts.on("-n", "--dryrun", "just puts del cmd and file name, not delete file") do |v|
+    options[:dryrun] = v
+  end
+  opts.on("-mN", "--maxdepth=N", OptionParser::DecimalInteger, "find max N level directory") do |v|
+    options[:maxdepth] = v
+  end
+  opts.on("-x DIR", "--exclude=DIR", "exclude directory. format: [ string | /regexp/ ]") do |v|
+    (options[:exclude] ||= []) << v
+  end
+end.parse!
+
+$options = options
+
+$idel = 0
+$inodel = 0
+$ds = 0
+$fs = 0
+
+p $options
+
 ARGV.each do |dn|
-  $idel = 0
-  $inodel = 0
-  $ds = 0
-  $fs = 0
   puts %Q{BEGIN dir:#{dn}}
   if File.directory? dn
-    processdir dn
+    processdir(dn, 1)
   end
   puts %Q{END   dir:#{dn},   ds:#{$ds},  fs:#{$fs},  del:#{$idel},  no del:#{$inodel}}
-  if $nodelf
-    $nodelf.close
-    STDERR.puts "\n\nno deleted file SEE   #{$nodelf.path}"
-  end
+end
+
+if $nodelf
+  $nodelf.close
+  STDERR.puts "\n\nno deleted file SEE   #{$nodelf.path}"
 end
